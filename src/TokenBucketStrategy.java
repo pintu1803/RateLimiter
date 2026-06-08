@@ -1,39 +1,54 @@
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TokenBucketStrategy implements RateLimitStrategyInterface {
 
-    private int tokenConsumed;
+    //Assumption: TOken bucket size will be same for all users
+    //Rate filling is also same for allusers
+
+    private Map<User, TokenBucket> tokenMap;
     private int tokenBucketSize;
-    private int refilTime;
-    private LocalTime lastTokenRefilTime;
-    private LocalTime nextTokenRefilTime;
+    private int refilRatePerSecond;
 
 
-    public TokenBucketStrategy(int tokenBucketSize, int refilTime) {
+    public TokenBucketStrategy(int tokenBucketSize, int refilRatePerSecond) {
+        this.tokenMap = new HashMap<>();
         this.tokenBucketSize = tokenBucketSize;
-        this.refilTime = refilTime; 
-        this.tokenConsumed = 0;
-        this.lastTokenRefilTime = null;
-        this.nextTokenRefilTime = null;
+        this.refilRatePerSecond = refilRatePerSecond;
     }
 
+
+    /*
+    Create the full capacity bucket on arrival of first request
+    For subsequent request, first add the tokens if any timeElapsed b/w prev and current request.
+    Finally consume the token to allow the request
+    */
 
     @Override
     public boolean handleRequest(Request request) {
 
-        // if(tokenConsumed < tokenBucketSize) {
-        //     lastConsumedTokenTime = request.getTime();
-        //     tokenConsumed += 1;
+        User user = request.getUser();
+        tokenMap.putIfAbsent(user, new TokenBucket(tokenBucketSize, tokenBucketSize));
 
-        //     if(tokenConsumed == tokenBucketSize) {
-        //         tokenConsumed = tokenBucketSize - (request.getTime().minusSeconds(lastConsumedTokenTime) * refilRate);
-        //     }
-        //     return true;
-        // } else {
-        //     return false;
-        // }
+        TokenBucket userBucket = tokenMap.get(user);
+        LocalTime lastRefilTime = userBucket.getLastTokenRefilTime();
+        if(lastRefilTime == null) {
+            userBucket.setLastTokenRefilTime(request.getTime());
+        } else {
+            long timeElapsed = Duration.between(lastRefilTime, request.getTime()).getSeconds();
+            userBucket.addTokenAvailable((int)timeElapsed * refilRatePerSecond);
+            userBucket.setLastTokenRefilTime(request.getTime());
+        }
+
+        // System.out.println("Size="+tokenBucketSize+" avail="+userBucket.getTokenAvailable() + " lastTime="+userBucket.getLastTokenRefilTime());
+ 
+        if(userBucket.getTokenAvailable() > 0) {
+            userBucket.decreaseTokenAvailable();
+            return true;
+        }
 
         return false;
 
