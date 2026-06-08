@@ -1,18 +1,39 @@
-## Getting Started
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+### Fixed Window Counter
+```
+Request : r1 : Amit : Accepted
+Request : r2 : Amit : Accepted
+Request : r3 : Amit : Rejected
+Request : r4 : Amit : Accepted
+```
 
-## Folder Structure
+### Sliding Window Log Algo
+```
+Request : r1 : Amit : Accepted
+Request : r2 : Amit : Accepted
+Request : r3 : Amit : Rejected
+Request : r4 : Amit : Accepted
+PS D:\7.Git-Projects\RateLimiter>
+```
 
-The workspace contains two folders by default, where:
+### Token Bucket
+```
+Request : r1 : Amit : Accepted
+Request : r2 : Amit : Rejected
+Request : r3 : Amit : Accepted
+Request : r4 : Amit : Accepted
+PS D:\7.Git-Projects\RateLimiter>
+```
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+### Leaky Bucket
+```
+Request : r1 : Amit : Accepted
+Request : r2 : Amit : Accepted
+Request : r1 : Amit : Leaked
+Request : r2 : Amit : Leaked
+Request : r3 : Amit : Accepted
+Request : r3 : Amit : Leaked
+Request : r4 : Amit : Accepted
+PS D:\7.Git-Projects\RateLimiter> 
+```
